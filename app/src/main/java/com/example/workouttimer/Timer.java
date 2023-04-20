@@ -3,13 +3,16 @@ package com.example.workouttimer;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextClock;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Timer extends AppCompatActivity {
 
@@ -31,25 +34,34 @@ public class Timer extends AppCompatActivity {
         Finish_Time=findViewById(R.id.stopTimer);
         Start_Again=findViewById(R.id.Start_again);
 
+
+        Intent intent=new Intent(Timer.this,ringTone.class);
+
         Intent timer_values=getIntent();
-        String toast=timer_values.getStringExtra("name");
+        String toast=timer_values.getStringExtra("ToastName");
         String D_value=timer_values.getStringExtra("Duration_Value");
         String R_value=timer_values.getStringExtra("Rest_Value");
 
         long duration_value=Long.parseLong(D_value)*1000;
         long rest_value=Long.parseLong(R_value)*1000;
+
+        int in_value_D=Integer.parseInt(D_value);
         System.out.println("The integer value is: " + duration_value);
 
-
+        progressBar.setMax(in_value_D);
+        progressBar.setProgress(in_value_D);
         countDownTimer=new CountDownTimer(duration_value,1000) {
             @Override
             public void onTick(long secisUntilFinished) {
+                int progress=(int) (secisUntilFinished/1000);
+                progressBar.setProgress(progressBar.getMax()-progress);
                 Show_Duration_Timer.setText("Time Left: "+secisUntilFinished/1000);
             }
             @Override
             public void onFinish() {
-                Show_Duration_Timer.setText("Time Finished");
-
+                progressBar.setProgress(0);
+                Show_Duration_Timer.setText(toast+" Well Done!");
+                Toast.makeText(Timer.this,"Click Start To Use Same Timing!",Toast.LENGTH_LONG).show();
             }
         };
         countDownTimer.start();
@@ -68,16 +80,24 @@ public class Timer extends AppCompatActivity {
                     @Override
                     public void onFinish() {
                         Show_Rest_Timer.setText("Rest Time Finished");
+                        startService(new Intent(Timer.this,ringTone.class));
+
                     }
+
                 };
                 Restimer.start();
+
             }
         });
+
+
 
         Start_Again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 countDownTimer.start();
+                stopService(new Intent(Timer.this,ringTone.class));
             }
         });
 
